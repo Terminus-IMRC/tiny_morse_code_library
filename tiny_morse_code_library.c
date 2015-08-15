@@ -1,5 +1,8 @@
 #include <stdint.h>
 #include "tiny_morse_code_library.h"
+#ifdef ARDUINO
+#include <avr/pgmspace.h>
+#endif /* ARDUINO */
 
 
 #define M8(T1, T2, T3, T4) ((uint8_t)((M_ ## T1 << 0) | (M_ ## T2 << 2) | (M_ ## T3 << 4) | (M_ ## T4 << 6)))
@@ -7,8 +10,13 @@
 
 
 static
+const
 uint8_t
-morse_alpha['z' - 'a' + 1] = {
+morse_alpha['z' - 'a' + 1]
+#ifdef ARDUINO
+PROGMEM
+#endif /* ARDUINO */
+= {
 	M8(O, A, N, N),
 	M8(A, O, O, O),
 	M8(A, O, A, O),
@@ -38,8 +46,13 @@ morse_alpha['z' - 'a' + 1] = {
 };
 
 static
+const
 uint16_t
-morse_digit['9' - '0' + 1] = {
+morse_digit['9' - '0' + 1]
+#ifdef ARDUINO
+PROGMEM
+#endif /* ARDUINO */
+= {
 	M16(A, A, A, A, A, N, N, N),
 	M16(O, A, A, A, A, N, N, N),
 	M16(O, O, A, A, A, N, N, N),
@@ -53,6 +66,15 @@ morse_digit['9' - '0' + 1] = {
 };
 
 
+#ifdef ARDUINO
+#define readtab_alpha(e) (pgm_read_byte(&(morse_alpha[e])))
+#define readtab_digit(e) (pgm_read_word(&(morse_digit[e])))
+#else /* ARDUINO */
+#define readtab_alpha(e) (morse_alpha[e])
+#define readtab_digit(e) (morse_digit[e])
+#endif /* ARDUINO */
+
+
 static void morse_entry8_to_flat (uint8_t entry, struct morse_flat_t *st);
 static void morse_entry16_to_flat (uint16_t entry, struct morse_flat_t *st);
 
@@ -63,11 +85,11 @@ morse_char_to_flat (const char c, struct morse_flat_t *st)
 	_Bool not_matched = 0;
 
 	if ((c >= 'a') && (c <= 'z'))
-		morse_entry8_to_flat(morse_alpha[c - 'a'], st);
+		morse_entry8_to_flat(readtab_alpha(c - 'a'), st);
 	else if ((c >= 'A') && (c <= 'Z'))
-		morse_entry8_to_flat(morse_alpha[c - 'A'], st);
+		morse_entry8_to_flat(readtab_alpha(c - 'A'), st);
 	else if ((c >= '0') && (c <= '9'))
-		morse_entry16_to_flat(morse_digit[c - '0'], st);
+		morse_entry16_to_flat(readtab_digit(c - '0'), st);
 	else {
 		switch (c) {
 			case '!':

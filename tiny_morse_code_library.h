@@ -2,6 +2,9 @@
 #define __TYNY_MORSE_CODE_LIBRARY_H_INCLUDED__
 
 #include <stdint.h>
+#ifdef ARDUINO
+#define _Bool int
+#endif /* ARDUINO */
 
 #define M_N (0x00)
 #define M_O (0x01)
